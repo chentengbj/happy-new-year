@@ -438,6 +438,19 @@ class NewsCollector:
         
         return job_list
     
+    def _deduplicate_jobs_by_function(self, jobs):
+        """按职能去重，每个职能只保留一条招聘信息"""
+        seen_functions = {}
+        deduplicated = []
+        for job in jobs:
+            function = job.get('jobFunction', '其他')
+            company = job.get('company', '')
+            key = f"{company}_{function}"
+            if key not in seen_functions:
+                seen_functions[key] = True
+                deduplicated.append(job)
+        return deduplicated
+    
     def _collect_company_jobs(self, company, source, max_pages=10, jobs_per_page=30):
         """收集特定公司的招聘信息（支持分页）"""
         job_list = []
