@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# 日志文件
+*.log
+collect_log.txt
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 不需要提交的脚本（可选，如果不想公开）
+# collect_news.py
+# setup_cron.sh
+

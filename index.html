@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>教培行业动向追踪 - 每周资讯</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <h1 class="logo">📚 教培行业动向追踪</h1>
+            <p class="subtitle">每周自动收集最新行业资讯</p>
+        </div>
+    </header>
+
+    <nav class="main-nav">
+        <div class="container">
+            <button class="nav-btn active" data-view="list">📋 列表视图</button>
+        </div>
+    </nav>
+
+    <!-- 列表视图 -->
+    <div id="listView" class="view-container active">
+        <nav class="filter-nav">
+            <div class="container">
+                <div class="filter-row">
+                    <div class="filter-group">
+                        <label>重要性：</label>
+                        <button class="filter-btn active" data-priority="all">全部</button>
+                        <button class="filter-btn" data-priority="high">重点</button>
+                        <button class="filter-btn" data-priority="normal">次重点</button>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>公司：</label>
+                        <select id="companyFilter" class="select-input">
+                            <option value="all">全部公司</option>
+                            <option value="好未来">好未来</option>
+                            <option value="希望学">希望学</option>
+                            <option value="学而思">学而思</option>
+                            <option value="新东方">新东方</option>
+                            <option value="作业帮">作业帮</option>
+                            <option value="高途">高途</option>
+                            <option value="猿辅导">猿辅导（含斑马AI、斑马百科、猿编程、飞象星球等）</option>
+                            <option value="其他">其他在线教育公司</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>领域：</label>
+                        <select id="categoryFilter" class="select-input">
+                            <option value="all">全部领域</option>
+                            <option value="教研成果">教研成果</option>
+                            <option value="AI教育">AI教育产品</option>
+                            <option value="动画视频">动画视频</option>
+                            <option value="获客增长">获客增长</option>
+                            <option value="品牌公关">品牌公关</option>
+                            <option value="用户运营">用户运营</option>
+                            <option value="招聘信息">招聘信息</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-group">
+                        <label>招聘职能：</label>
+                        <select id="jobFunctionFilter" class="select-input">
+                            <option value="all">全部职能</option>
+                            <option value="产品研发类">产品研发类</option>
+                            <option value="讲师/教研类">讲师/教研类</option>
+                            <option value="市场获客类">市场获客类</option>
+                            <option value="用户运营类">用户运营类</option>
+                            <option value="品牌公关类">品牌公关类</option>
+                            <option value="销售类">销售类</option>
+                            <option value="供应链相关类">供应链相关类</option>
+                            <option value="视频动画类">视频动画类</option>
+                            <option value="原画/视觉设计类">原画/视觉设计类</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>标签：</label>
+                        <select id="tagFilter" class="select-input">
+                            <option value="all">全部标签</option>
+                        </select>
+                    </div>
+
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜索关键词..." class="search-input">
+                        <button id="searchBtn" class="search-btn">🔍</button>
+                    </div>
+                </div>
+
+                <div class="action-bar">
+                    <button class="action-btn" id="exportBtn">📥 导出数据</button>
+                    <button class="action-btn" id="manageTagsBtn">🏷️ 标签管理</button>
+                    <button class="action-btn" id="viewFavoritesBtn">⭐ 我的收藏</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="container">
+                <div class="time-range-selector">
+                    <div class="filter-group">
+                        <label>时间段：</label>
+                        <select id="timeRangeFilter" class="select-input">
+                            <option value="weekly">每周</option>
+                            <option value="monthly">每月</option>
+                            <option value="quarterly">每季度</option>
+                            <option value="halfyearly">每半年</option>
+                            <option value="yearly">每年</option>
+                        </select>
+                    </div>
+                    <div class="week-selector">
+                        <button class="week-btn" id="prevPeriod">← 上一期</button>
+                        <span class="current-week" id="currentPeriod">2024年第1周</span>
+                        <button class="week-btn" id="nextPeriod">下一期 →</button>
+                    </div>
+                </div>
+
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <span class="stat-label">重点：</span>
+                        <span class="stat-value high" id="highPriorityCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">次重点：</span>
+                        <span class="stat-value normal" id="normalPriorityCount">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">总计：</span>
+                        <span class="stat-value" id="totalCount">0</span>
+                    </div>
+                </div>
+
+                <div id="newsContainer" class="news-container">
+                    <!-- 动态加载内容 -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- 标签管理模态框 -->
+    <div id="tagModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>标签管理</h2>
+                <button class="close-btn" id="closeTagModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="tag-input-group">
+                    <input type="text" id="newTagInput" placeholder="输入新标签名称" class="tag-input">
+                    <button id="addTagBtn" class="btn-primary">添加标签</button>
+                </div>
+                <div class="tags-list" id="tagsList">
+                    <!-- 动态加载标签 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>数据每周自动更新 | 最后更新：<span id="lastUpdate">-</span></p>
+        </div>
+    </footer>
+
+    <script src="data.js" onload="console.log('✅ data.js脚本标签加载完成'); if(typeof newsData !== 'undefined') { console.log('✅ newsData已定义，长度:', newsData.length); } else { console.error('❌ data.js加载完成但newsData未定义'); }" onerror="console.error('❌ data.js脚本标签加载失败');"></script>
+    <script src="script.js" onload="console.log('✅ script.js脚本标签加载完成');" onerror="console.error('❌ script.js脚本标签加载失败');"></script>
+    <script>
+        // 额外的数据加载检查和错误处理
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('data.js')) {
+                console.error('❌ data.js加载失败:', e.message);
+                const container = document.getElementById('newsContainer');
+                if (container) {
+                    container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">❌</div><p>data.js文件加载失败，请检查文件是否存在</p></div>';
+                }
+            }
+        }, true);
+        
+        window.addEventListener('load', function() {
+            console.log('📄 HTML内联脚本：页面完全加载完成');
+            console.log('📊 HTML内联脚本：newsData状态', {
+                '是否定义': typeof newsData !== 'undefined',
+                '类型': typeof newsData,
+                '值': typeof newsData !== 'undefined' ? (Array.isArray(newsData) ? `数组，长度${newsData.length}` : typeof newsData) : 'undefined',
+                'window.newsData': typeof window.newsData !== 'undefined' ? '存在' : '不存在',
+                '脚本加载时间': performance.now() + 'ms'
+            });
+            
+            // 检查是否有语法错误
+            const scripts = Array.from(document.scripts);
+            const dataScript = scripts.find(s => s.src && s.src.includes('data.js'));
+            if (dataScript) {
+                console.log('📜 data.js脚本信息', {
+                    'src': dataScript.src,
+                    'readyState': dataScript.readyState,
+                    '是否已执行': typeof newsData !== 'undefined'
+                });
+            } else {
+                console.warn('⚠️ 未找到data.js脚本标签');
+            }
+        });
+        
+        // 监听脚本加载错误
+        window.addEventListener('error', function(e) {
+            if (e.filename && e.filename.includes('data.js')) {
+                console.error('❌ data.js加载错误', {
+                    '错误消息': e.message,
+                    '文件名': e.filename,
+                    '行号': e.lineno,
+                    '列号': e.colno,
+                    '错误对象': e.error
+                });
+            }
+        }, true);
+    </script>
+</body>
+</html>
+
+
