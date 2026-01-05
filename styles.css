@@ -467,6 +467,17 @@ body {
     box-shadow: 0 2px 4px rgba(5, 150, 105, 0.2);
 }
 
+/* 搜索链接样式 - 使用蓝色区分 */
+.source-link.search-link {
+    background: var(--primary-blue);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.source-link.search-link:hover {
+    background: var(--secondary-blue);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+}
+
 .source-link.disabled {
     background: #cbd5e1;
     color: #64748b;

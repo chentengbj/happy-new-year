@@ -737,20 +737,50 @@ function renderFilteredNews() {
     attachCardEvents();
 }
 
+// 修复和格式化链接
+function formatSourceLink(source) {
+    if (!source) return null;
+    
+    // 处理搜狗跳转链接
+    if (source.startsWith('/link?url=')) {
+        return 'https://news.sogou.com' + source;
+    }
+    
+    // 处理其他相对路径
+    if (source.startsWith('/') && !source.startsWith('//')) {
+        return null; // 无法确定域名的相对路径
+    }
+    
+    // 处理 // 开头的协议相对URL
+    if (source.startsWith('//')) {
+        return 'https:' + source;
+    }
+    
+    return source;
+}
+
 // 验证链接是否有效
 function isValidSourceLink(source) {
     if (!source) return false;
     
+    // 先格式化链接
+    const formattedSource = formatSourceLink(source);
+    if (!formattedSource) return false;
+    
     // 检查是否是有效的HTTP/HTTPS链接
     try {
-        const url = new URL(source);
+        const url = new URL(formattedSource);
         // 排除示例链接和无效链接
         if (url.hostname === 'example.com' || 
             url.hostname === 'localhost' ||
             url.hostname === '127.0.0.1' ||
-            source.startsWith('http://example') ||
-            source.startsWith('https://example')) {
+            formattedSource.startsWith('http://example') ||
+            formattedSource.startsWith('https://example')) {
             return false;
+        }
+        // 检查是否是搜索页面链接（不够精准）
+        if (url.pathname.includes('/search/') && !url.pathname.includes('/p/')) {
+            return 'search'; // 返回特殊标记，表示是搜索链接
         }
         // 必须是http或https协议
         return url.protocol === 'http:' || url.protocol === 'https:';
@@ -786,10 +816,19 @@ function createNewsCard(news) {
         `<span class="custom-tag">${tag}</span>`
     ).join('');
 
-    // 验证链接并创建按钮（所有信息必须有真实来源）
+    // 验证链接并创建按钮
     let sourceLink = '';
-    if (news.source && isValidSourceLink(news.source)) {
-        sourceLink = `<a href="${news.source}" target="_blank" rel="noopener noreferrer" class="source-link" title="在新标签页中打开原文">
+    const linkValidation = isValidSourceLink(news.source);
+    const formattedUrl = formatSourceLink(news.source);
+    
+    if (linkValidation === 'search') {
+        // 搜索页面链接 - 显示为"搜索相关"
+        sourceLink = `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="source-link search-link" title="搜索相关文章">
+            🔍 搜索相关
+        </a>`;
+    } else if (linkValidation && formattedUrl) {
+        // 精确文章链接 - 显示为"查看原文"
+        sourceLink = `<a href="${formattedUrl}" target="_blank" rel="noopener noreferrer" class="source-link" title="在新标签页中打开原文">
             🔗 查看原文
         </a>`;
     } else {
