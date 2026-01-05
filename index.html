@@ -166,8 +166,8 @@
         </div>
     </footer>
 
-    <script src="data.js" onload="console.log('✅ data.js脚本标签加载完成'); if(typeof newsData !== 'undefined') { console.log('✅ newsData已定义，长度:', newsData.length); } else { console.error('❌ data.js加载完成但newsData未定义'); }" onerror="console.error('❌ data.js脚本标签加载失败');"></script>
-    <script src="script.js" onload="console.log('✅ script.js脚本标签加载完成');" onerror="console.error('❌ script.js脚本标签加载失败');"></script>
+    <script src="data.js?v=2" onload="console.log('✅ data.js脚本标签加载完成'); if(typeof newsData !== 'undefined') { console.log('✅ newsData已定义，长度:', newsData.length); } else { console.error('❌ data.js加载完成但newsData未定义'); }" onerror="console.error('❌ data.js脚本标签加载失败');"></script>
+    <script src="script.js?v=2" onload="console.log('✅ script.js脚本标签加载完成');" onerror="console.error('❌ script.js脚本标签加载失败');"></script>
     <script>
         // 额外的数据加载检查和错误处理
         window.addEventListener('error', function(e) {
