@@ -278,39 +278,45 @@ class RealNewsCollector:
         """从百度新闻搜索获取新闻"""
         news_list = []
         try:
-            search_url = f"https://www.baidu.com/s"
+            # 使用百度资讯搜索
+            search_url = "https://www.baidu.com/s"
             params = {
-                'wd': f'{keyword} 教育',
+                'wd': f'{keyword}',
                 'tn': 'news',
-                'rtt': 1,
-                'bsst': 1,
-                'cl': 2,
-                'medium': 0
+                'ie': 'utf-8'
             }
             
-            response = self.session.get(search_url, params=params, timeout=15)
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+                'Accept': 'text/html,application/xhtml+xml',
+                'Accept-Language': 'zh-CN,zh;q=0.9',
+                'Referer': 'https://www.baidu.com/'
+            }
+            
+            response = self.session.get(search_url, params=params, headers=headers, timeout=15)
             response.encoding = 'utf-8'
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # 查找新闻结果
-            results = soup.find_all('div', class_='result')
+            # 查找新闻结果容器
+            results = soup.find_all('div', class_=re.compile('result|c-container'))
             
             for result in results[:20]:
                 try:
                     # 获取标题和链接
-                    title_elem = result.find('a')
+                    title_elem = result.find('a', href=True)
                     if not title_elem:
                         continue
                     
                     title = title_elem.get_text(strip=True)
                     href = title_elem.get('href', '')
                     
-                    if not title or not href:
+                    if not title or not href or len(title) < 8:
                         continue
                     
-                    # 百度的链接需要跳转获取真实URL
-                    # 直接使用百度的跳转链接也可以工作
-                    real_url = href
+                    # 解析百度跳转链接获取真实URL
+                    real_url = self._resolve_baidu_link(href)
+                    if not real_url:
+                        continue
                     
                     # 提取公司
                     company = self.extract_company(title)
@@ -318,14 +324,14 @@ class RealNewsCollector:
                         continue
                     
                     # 获取摘要
-                    summary_elem = result.find('div', class_='c-summary')
-                    summary = summary_elem.get_text(strip=True) if summary_elem else ''
+                    summary_elem = result.find(['div', 'span'], class_=re.compile('c-abstract|c-summary|content'))
+                    summary = summary_elem.get_text(strip=True)[:200] if summary_elem else ''
                     
                     news_item = {
                         'type': '新闻',
                         'company': company,
                         'title': title,
-                        'content': summary[:200] if summary else '',
+                        'content': summary,
                         'priority': self.determine_priority(title, summary),
                         'categories': self.categorize_news(title, summary),
                         'date': datetime.now().strftime('%Y-%m-%d'),
@@ -340,6 +346,27 @@ class RealNewsCollector:
             print(f"  百度新闻搜索出错: {e}")
         
         return news_list
+    
+    def _resolve_baidu_link(self, href):
+        """解析百度跳转链接，获取真实目标URL"""
+        try:
+            if not href.startswith('http'):
+                return None
+            
+            # 跟随重定向获取真实URL
+            response = self.session.head(href, allow_redirects=True, timeout=8)
+            final_url = response.url
+            
+            # 验证URL有效性
+            if final_url and final_url.startswith('http') and 'baidu.com' not in final_url:
+                return final_url
+            
+            # 如果head请求失败，尝试get请求
+            response = self.session.get(href, allow_redirects=True, timeout=8)
+            return response.url if response.url and 'baidu.com' not in response.url else None
+            
+        except Exception:
+            return None
     
     # ==================== 必应新闻搜索 ====================
     def collect_from_bing_news(self, keyword):
@@ -394,7 +421,7 @@ class RealNewsCollector:
     
     # ==================== 搜狗新闻搜索 ====================
     def collect_from_sogou_news(self, keyword):
-        """从搜狗新闻搜索获取新闻（更稳定）"""
+        """从搜狗新闻搜索获取新闻 - 解析真实链接"""
         news_list = []
         try:
             search_url = "https://news.sogou.com/news"
@@ -428,19 +455,10 @@ class RealNewsCollector:
                     if not title or not href or len(title) < 8:
                         continue
                     
-                    # 修复链接格式
-                    if href.startswith('/link'):
-                        href = f"https://news.sogou.com{href}"
-                    elif not href.startswith('http'):
-                        href = f"https://news.sogou.com{href}"
-                    
-                    # 尝试获取真实链接（跟随跳转）
-                    try:
-                        real_response = self.session.head(href, allow_redirects=True, timeout=5)
-                        if real_response.url and real_response.url.startswith('http'):
-                            href = real_response.url
-                    except:
-                        pass  # 保持原链接
+                    # 修复链接格式并获取真实链接
+                    real_url = self._resolve_sogou_link(href)
+                    if not real_url:
+                        continue
                     
                     # 提取公司
                     company = self.extract_company(title)
@@ -459,7 +477,7 @@ class RealNewsCollector:
                         'priority': self.determine_priority(title, summary),
                         'categories': self.categorize_news(title, summary),
                         'date': datetime.now().strftime('%Y-%m-%d'),
-                        'source': href
+                        'source': real_url  # 使用解析后的真实链接
                     }
                     news_list.append(news_item)
                     
@@ -470,6 +488,40 @@ class RealNewsCollector:
             print(f"  搜狗新闻搜索出错: {e}")
         
         return news_list
+    
+    def _resolve_sogou_link(self, href):
+        """解析搜狗跳转链接，获取真实目标URL"""
+        try:
+            # 构建完整URL
+            if href.startswith('/link'):
+                full_url = f"https://news.sogou.com{href}"
+            elif href.startswith('http'):
+                full_url = href
+            else:
+                return None
+            
+            # 请求链接并跟随重定向
+            response = self.session.get(full_url, allow_redirects=True, timeout=10)
+            final_url = response.url
+            
+            # 验证最终URL有效
+            if final_url and final_url.startswith('http') and 'sogou.com' not in final_url:
+                return final_url
+            
+            # 如果重定向失败，尝试从页面内容提取真实链接
+            if 'sogou.com' in final_url:
+                soup = BeautifulSoup(response.text, 'html.parser')
+                # 查找可能的重定向链接
+                meta_refresh = soup.find('meta', attrs={'http-equiv': 'refresh'})
+                if meta_refresh:
+                    content = meta_refresh.get('content', '')
+                    url_match = re.search(r'url=([^\s"\']+)', content, re.IGNORECASE)
+                    if url_match:
+                        return url_match.group(1)
+            
+            return None
+        except Exception as e:
+            return None
     
     # ==================== 今日头条搜索 ====================
     def collect_from_toutiao(self, keyword):
@@ -561,20 +613,20 @@ class RealNewsCollector:
         all_news.extend(news)
         print(f"  获取 {len(news)} 条")
         
-        # 4. 从搜狗新闻搜索
-        print("\n📰 从搜狗新闻搜索...")
+        # 4. 从百度新闻搜索（主要来源）
+        print("\n📰 从百度新闻搜索...")
         for company in MAIN_COMPANIES:
             print(f"  搜索: {company}")
-            news = self.collect_from_sogou_news(company)
+            news = self.collect_from_baidu_news(company)
             all_news.extend(news)
             print(f"    获取 {len(news)} 条")
-            time.sleep(1)
+            time.sleep(2)  # 稍长延迟避免被封
         
-        # 5. 从今日头条搜索补充
-        print("\n📰 从今日头条搜索补充...")
-        for company in MAIN_COMPANIES[:3]:
+        # 5. 从搜狗新闻搜索补充
+        print("\n📰 从搜狗新闻搜索补充...")
+        for company in MAIN_COMPANIES[:3]:  # 只搜前3个
             print(f"  搜索: {company}")
-            news = self.collect_from_toutiao(company)
+            news = self.collect_from_sogou_news(company)
             all_news.extend(news)
             print(f"    获取 {len(news)} 条")
             time.sleep(1)
