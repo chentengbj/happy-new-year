@@ -71,7 +71,7 @@ function initializeApp() {
                     '时间段详情': periods.length > 0 ? periods.map((p, i) => ({
                         '索引': i,
                         '标签': p.label,
-                        '数据量': p.data.length
+                        '数据量': p.weeks ? p.weeks.length : 0
                     })) : []
                 });
                 
