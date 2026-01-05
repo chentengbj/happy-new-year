@@ -759,7 +759,7 @@ function formatSourceLink(source) {
     return source;
 }
 
-// 验证链接是否有效
+// 验证链接是否有效，并判断链接类型
 function isValidSourceLink(source) {
     if (!source) return false;
     
@@ -770,20 +770,46 @@ function isValidSourceLink(source) {
     // 检查是否是有效的HTTP/HTTPS链接
     try {
         const url = new URL(formattedSource);
+        
         // 排除示例链接和无效链接
         if (url.hostname === 'example.com' || 
             url.hostname === 'localhost' ||
-            url.hostname === '127.0.0.1' ||
-            formattedSource.startsWith('http://example') ||
-            formattedSource.startsWith('https://example')) {
+            url.hostname === '127.0.0.1') {
             return false;
         }
-        // 检查是否是搜索页面链接（不够精准）
-        if (url.pathname.includes('/search/') && !url.pathname.includes('/p/')) {
-            return 'search'; // 返回特殊标记，表示是搜索链接
+        
+        // 判断是否为搜索链接（以下情况返回 'search'）
+        const isSearchLink = (
+            // 1. URL路径包含 /search/
+            url.pathname.includes('/search/') ||
+            url.pathname.includes('/search') ||
+            // 2. 36氪搜索链接
+            (url.hostname.includes('36kr.com') && url.pathname.includes('/search')) ||
+            // 3. 百度搜索链接
+            (url.hostname.includes('baidu.com') && url.search.includes('wd=')) ||
+            // 4. 搜狗搜索/跳转链接
+            (url.hostname.includes('sogou.com')) ||
+            // 5. 必应搜索链接
+            (url.hostname.includes('bing.com') && url.pathname.includes('/search')) ||
+            // 6. BOSS直聘搜索链接
+            (url.hostname.includes('zhipin.com') && url.search.includes('query=')) ||
+            // 7. 其他招聘网站搜索链接
+            (url.hostname.includes('liepin.com') && url.search.includes('key=')) ||
+            (url.hostname.includes('lagou.com') && url.search.includes('kd=')) ||
+            (url.hostname.includes('zhaopin.com') && url.search.includes('kw=')) ||
+            (url.hostname.includes('51job.com') && url.search.includes('keyword='))
+        );
+        
+        if (isSearchLink) {
+            return 'search'; // 搜索类链接
         }
+        
         // 必须是http或https协议
-        return url.protocol === 'http:' || url.protocol === 'https:';
+        if (url.protocol === 'http:' || url.protocol === 'https:') {
+            return 'direct'; // 直达链接
+        }
+        
+        return false;
     } catch (e) {
         // 不是有效的URL
         return false;
