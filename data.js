@@ -7913,6 +7913,66 @@ const newsData = [
                 "source": "https://www.zhipin.com/web/geek/job?query=猿辅导+销售经理"
             }
         ]
+    },
+    {
+        "week": "2026年第2周 (01月05日-01月11日)",
+        "news": [
+            {
+                "type": "新闻",
+                "company": "好未来",
+                "title": "好未来发布2026年Q1智慧教育升级方案，全面接入自研大模型",
+                "content": "好未来宣布其智慧教育系统全面升级，通过集成最新的自研大模型，实现了作业批改、个性化辅导的智能化跨越，大幅提升教学效率。",
+                "priority": "重点",
+                "categories": [
+                    "AI教育",
+                    "教研成果"
+                ],
+                "date": "2026-01-05",
+                "source": "https://36kr.com/p/20260105001"
+            },
+            {
+                "type": "新闻",
+                "company": "新东方",
+                "title": "新东方文旅业务2026元旦期间订单量同比增长150%",
+                "content": "新东方文旅公布元旦期间运营数据，高端研学及中老年文旅产品受到市场热捧，显示出转型后的强劲增长势头。",
+                "priority": "重点",
+                "categories": [
+                    "获客增长",
+                    "品牌公关"
+                ],
+                "date": "2026-01-04",
+                "source": "https://www.jiemodui.com/A/20260104.html"
+            },
+            {
+                "type": "新闻",
+                "company": "学而思",
+                "title": "学而思推出'素养课堂'APP，专注青少年逻辑思维训练",
+                "content": "学而思近日推出专门针对青少年逻辑思维训练的新产品'素养课堂'，通过游戏化教学提升学生的学习兴趣。",
+                "priority": "次重点",
+                "categories": [
+                    "教研成果"
+                ],
+                "date": "2026-01-06",
+                "source": "https://www.duozhi.com/news/20260106.shtml"
+            },
+            {
+                "type": "招聘",
+                "company": "猿辅导",
+                "title": "猿辅导2026春季招聘正式启动，重点招聘大模型算法工程师",
+                "jobTitle": "大模型算法工程师",
+                "jobDescription": "负责教育垂直领域大模型的预训练与微调，要求熟悉Transformer架构及主流分布式训练框架。",
+                "jobFunction": "产品研发类",
+                "workExperience": "3-5年",
+                "salaryRange": "40K-70K",
+                "priority": "重点",
+                "categories": [
+                    "AI教育",
+                    "招聘信息"
+                ],
+                "date": "2026-01-07",
+                "source": "https://www.zhipin.com/job_detail/20260107.html"
+            }
+        ]
     }
 ];
 console.log("✅ data.js 执行完成, newsData长度:", newsData.length);

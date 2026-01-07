@@ -382,13 +382,24 @@ function setupEventListeners() {
 function highlightAITitle(title) {
     if (!title) return title;
     
-    // 检测AI+教育相关关键词
-    const aiKeywords = ['AI', '人工智能', 'AI+', '智能', '机器学习', '算法', 'AI教育', 'AI+教育'];
+    // 检测AI+教育相关关键词（按长度倒序排序，避免重复匹配）
+    const aiKeywords = ['AI教育', 'AI+教育', '人工智能', '机器学习', '算法工程师', 'AI+', 'AI', '智能', '算法'];
     let highlightedTitle = title;
     
-    aiKeywords.forEach(keyword => {
-        const regex = new RegExp(`(${keyword})`, 'gi');
-        highlightedTitle = highlightedTitle.replace(regex, '<span class="ai-highlight">$1</span>');
+    // 使用占位符防止重复替换
+    const placeholders = [];
+    aiKeywords.forEach((keyword, index) => {
+        const regex = new RegExp(keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+        highlightedTitle = highlightedTitle.replace(regex, (match) => {
+            const placeholder = `___AI_PLACEHOLDER_${index}_${placeholders.length}___`;
+            placeholders.push({ placeholder, html: `<span class="ai-highlight">${match}</span>` });
+            return placeholder;
+        });
+    });
+    
+    // 还原占位符
+    placeholders.forEach(({ placeholder, html }) => {
+        highlightedTitle = highlightedTitle.replace(placeholder, html);
     });
     
     return highlightedTitle;
